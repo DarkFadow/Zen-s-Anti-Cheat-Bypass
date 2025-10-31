@@ -83,7 +83,7 @@ end
 -- Fonction principale pour activer le bypass
 function AntiCheatBypassUltra:Enable(codeToProtect, publicKey, privateKey)
     -- Afficher une alerte dans les logs de Roblox
-    logAlert("AntiCheatBypassUltra a été chargé avec succès!")
+    logAlert("Zen Anti Cheat Bypass has successfully loaded !")
 
     -- Mélanger les instructions
     local shuffledCode = shuffleInstructions(codeToProtect)
