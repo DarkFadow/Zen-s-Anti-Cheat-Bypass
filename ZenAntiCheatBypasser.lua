@@ -1,45 +1,31 @@
--- ZEN ANTICHEAT BYPASSER - PROTECTION CIBLÉE (CORRIGÉE)
-do
-    -- 🔧 Détection executeur
-    local EXECUTOR_TYPE = "Unknown"
-    if syn then 
-        EXECUTOR_TYPE = "Synapse"
-    elseif Krnl then 
-        EXECUTOR_TYPE = "Krnl" 
-    elseif fluxus then 
-        EXECUTOR_TYPE = "Fluxus"
-    end
-
-    -- 🛡️ Nettoyage compatible Roblox
-    local function Clean()
-        if rconsoleclear then 
-            rconsoleclear() 
+-- ZenAntiCheatBypasser.lua - Version Anti-Client-Detection
+return (function()
+    -- 🛡️ BYPASS ULTRA AVANCÉ - ANTI CLIENT DETECTION
+    do
+        -- Détection executeur
+        local EXECUTOR_TYPE = "Unknown"
+        if syn then EXECUTOR_TYPE = "Synapse"
+        elseif Krnl then EXECUTOR_TYPE = "Krnl" 
+        elseif fluxus then EXECUTOR_TYPE = "Fluxus"
+        elseif getexecutorname then EXECUTOR_TYPE = getexecutorname() or "Xeno"
         end
-        
-        if gcinfo then
-            gcinfo()
-        end
-    end
 
-    -- 🔒 Hooks de protection UNIQUEMENT pour le script actuel
-    local function InstallLocalHooks()
-        -- Protection anti-kick SEULEMENT pour ce script
+        -- Nettoyage profond
+        if rconsoleclear then rconsoleclear() end
+        if clr then clr() end
+        collectgarbage("collect")
+
+        -- 🔥 DÉSACTIVATION DE TOUTES LES FONCTIONS DE KICK
         pcall(function()
+            -- Couche 1: Kick du Player
             if hookfunction and game.Players.LocalPlayer then
-                local originalKick = game.Players.LocalPlayer.Kick
-                hookfunction(originalKick, function(self, ...)
-                    -- Vérifie si l'appel vient de notre script
-                    local stack = debug.traceback()
-                    if stack:find("ZenAntiCheatBypasser") or stack:find("ZEN AUTO-PROTECTION") then
-                        return nil -- Bloque seulement pour notre script
-                    end
-                    return originalKick(self, ...)
+                hookfunction(game.Players.LocalPlayer.Kick, function() 
+                    warn("🚫 Kick blocked by ZenBypass")
+                    return nil 
                 end)
             end
-        end)
-        
-        -- Protection namecall CIBLÉE
-        pcall(function()
+
+            -- Couche 2: Tous les kicks via namecall
             if hookfunction and getrawmetatable then
                 local mt = getrawmetatable(game)
                 if mt and mt.__namecall then
@@ -48,40 +34,100 @@ do
                         local method = getnamecallmethod and getnamecallmethod() or ""
                         local methodLower = method:lower()
                         
-                        -- Vérifie si l'appel vient de notre contexte
-                        local stack = debug.traceback()
-                        local isOurScript = stack:find("ZenAntiCheatBypasser") or stack:find("ZEN AUTO-PROTECTION")
-                        
-                        if isOurScript and (methodLower:find("kick") or methodLower:find("ban")) then
+                        -- Bloque TOUTES les méthodes de kick/ban
+                        if methodLower:find("kick") or methodLower:find("ban") or 
+                           methodLower:find("crash") or methodLower:find("shutdown") or
+                           methodLower:find("report") or methodLower:find("alert") or
+                           methodLower:find("disconnect") or methodLower:find("terminate") or
+                           methodLower:find("remove") or methodLower:find("destroy") then
+                            warn("🚫 Namecall blocked: " .. method)
                             return nil
                         end
-                        
                         return originalNamecall(self, ...)
                     end)
                 end
             end
-        end)
-    end
 
-    -- 🛡️ PROTECTION UNIQUEMENT DU SCRIPT COURANT
-    local function ProtectCurrentScript()
-        -- Crée un environnement sécurisé SEULEMENT pour ce script
-        local secureEnv = {
-            print = print,
-            warn = warn,
-            error = error,
-            task = task,
-            game = game,
-            _G = _G,
-            script = script
-        }
-        
-        -- Injecte la protection directement dans le contexte actuel
-        pcall(function()
-            -- Protection anti-detection locale
+            -- Couche 3: Kick via RemoteEvents/RemoteFunctions
             if hookfunction then
-                hookfunction(debug.getinfo, function(func)
-                    local info = {
+                -- Hook Instance.new pour intercepter les RemoteEvents
+                local originalInstanceNew = Instance.new
+                hookfunction(Instance.new, function(className)
+                    local obj = originalInstanceNew(className)
+                    if className == "RemoteEvent" or className == "RemoteFunction" then
+                        if hookfunction then
+                            -- Intercepte FireServer des RemoteEvents
+                            if obj.FireServer then
+                                hookfunction(obj.FireServer, function(self, ...)
+                                    local args = {...}
+                                    local shouldBlock = false
+                                    
+                                    -- Analyse les arguments pour détecter les kicks
+                                    for _, arg in ipairs(args) do
+                                        if type(arg) == "string" and arg:lower():find("kick") then
+                                            shouldBlock = true
+                                            break
+                                        end
+                                    end
+                                    
+                                    if shouldBlock then
+                                        warn("🚫 RemoteEvent kick blocked")
+                                        return nil
+                                    end
+                                    
+                                    return obj.FireServer(self, ...)
+                                end)
+                            end
+                            
+                            -- Intercepte InvokeServer des RemoteFunctions
+                            if obj.InvokeServer then
+                                hookfunction(obj.InvokeServer, function(self, ...)
+                                    local args = {...}
+                                    local shouldBlock = false
+                                    
+                                    for _, arg in ipairs(args) do
+                                        if type(arg) == "string" and arg:lower():find("kick") then
+                                            shouldBlock = true
+                                            break
+                                        end
+                                    end
+                                    
+                                    if shouldBlock then
+                                        warn("🚫 RemoteFunction kick blocked")
+                                        return nil
+                                    end
+                                    
+                                    return obj.InvokeServer(self, ...)
+                                end)
+                            end
+                        end
+                    end
+                    return obj
+                end)
+            end
+
+            -- Couche 4: Protection des services
+            local dangerousServices = {
+                "Players", "NetworkClient", "ScriptContext", "CoreGui"
+            }
+            
+            for _, serviceName in ipairs(dangerousServices) do
+                pcall(function()
+                    local service = game:GetService(serviceName)
+                    if service and service.Kick then
+                        hookfunction(service.Kick, function() 
+                            warn("🚫 Service kick blocked: " .. serviceName)
+                            return nil 
+                        end)
+                    end
+                end)
+            end
+
+            -- Couche 5: Anti-client detection
+            if hookfunction then
+                -- Fausse les informations du client
+                hookfunction(debug.getinfo, function() 
+                    return {
                         source = "=[C]",
                         linedefined = 0,
                         lastlinedefined = 0,
@@ -90,105 +136,76 @@ do
                         namewhat = "",
                         short_src = "=[C]"
                     }
-                    return info
+                end)
+                
+                -- Cache les métadonnées
+                hookfunction(getconnections, function()
+                    return {}
+                end)
+            end
+
+            -- Couche 6: Protection réseau contre les détections
+            if hookfunction and game.HttpGet then
+                hookfunction(game.HttpGet, function(self, url)
+                    -- Bloque les appels aux APIs anti-cheat
+                    if url and (url:lower():find("anticheat") or url:lower():find("detect") or url:lower():find("report")) then
+                        return "{}"
+                    end
+                    return game.HttpGet(self, url)
+                end)
+            end
+
+            -- Couche 7: Désactive les BindToClose suspects
+            if game.BindToClose then
+                hookfunction(game.BindToClose, function(func)
+                    warn("🚫 BindToClose blocked")
+                    return nil
                 end)
             end
         end)
-        
-        return secureEnv
-    end
 
-    -- 🔄 INTERCEPTION UNIQUEMENT POUR LE SCRIPT QUI NOUS CHARGE
-    local function SetupTargetedInterception()
-        -- Sauvegarde l'environnement original
-        local originalLoadstring = loadstring
-        
-        -- Override loadstring POUR CE SCRIPT SEULEMENT
-        getgenv().loadstring = function(code)
-            if not code or type(code) ~= "string" then
-                return originalLoadstring(code)
-            end
-            
-            -- Vérifie si c'est NOTRE script qui charge du code
-            local stack = debug.traceback()
-            local isOurLoader = stack:find("ZenAntiCheatBypasser") or stack:find("ZEN AUTO-PROTECTION")
-            
-            if isOurLoader then
-                -- Injection de protection UNIQUEMENT pour le code chargé par NOTRE script
-                local protectionHeader = [[
-                    -- ZEN AUTO-PROTECTION INJECTED
-                    do
-                        -- Protection locale pour ce script seulement
-                        pcall(function()
-                            if hookfunction and game.Players.LocalPlayer then
-                                local originalKick = game.Players.LocalPlayer.Kick
-                                hookfunction(originalKick, function(self, ...)
-                                    local stack = debug.traceback()
-                                    if stack:find("ZEN AUTO-PROTECTION") then
-                                        return nil
-                                    end
-                                    return originalKick(self, ...)
-                                end)
-                            end
-                        end)
-                        
-                        -- Environnement sécurisé local
-                        local _ZenProtected = true
+        -- 🎭 CAMOUFLAGE AVANCÉ
+        task.spawn(function()
+            -- Comportement légitime
+            while task.wait(math.random(15, 45)) do
+                pcall(function()
+                    local players = game:GetService("Players")
+                    if players.LocalPlayer then
+                        -- Activités normales
+                        local _ = players.LocalPlayer.UserId
+                        local __ = players.LocalPlayer.AccountAge
                     end
-                    
-                    -- CODE UTILISATEUR ORIGINAL CI-DESSOUS
-                ]]
-                
-                local protectedCode = protectionHeader .. "\n" .. code
-                return originalLoadstring(protectedCode)
-            else
-                -- Pour les autres scripts, pas de protection
-                return originalLoadstring(code)
+                end)
             end
-        end
-    end
+        end)
 
-    -- 🎯 Messages F9 discrets
-    local function ShowMessages()
-        task.delay(1, function()
-            print("Script service initialized")
-        end)
-        
-        task.delay(2, function()
-            warn("Core modules loaded")
-        end)
-        
-        task.delay(3, function()
-            print("System: Operational")
-        end)
-        
-        -- Message de confirmation Zen (discret)
-        task.delay(4, function()
-            warn("Zen: Local protection active")
-        end)
-    end
-
-    -- ⚡ EXÉCUTION PRINCIPALE - PROTECTION CIBLÉE
-    Clean()
-    InstallLocalHooks()
-    ProtectCurrentScript()
-    SetupTargetedInterception()
-    ShowMessages()
-    
-    print("✅ Zen protection active for this script only")
-    
-    -- Protection continue UNIQUEMENT pour ce script (CORRIGÉ)
-    task.spawn(function()
-        local protectionActive = true
-        while protectionActive and task.wait(15) do
+        -- Fake errors pour brouiller les pistes
+        task.delay(math.random(30, 90), function()
             pcall(function()
-                -- Vérification que notre protection est toujours active
-                local stack = debug.traceback()
-                if not stack:find("ZenAntiCheatBypasser") then
-                    -- Notre script a été déchargé, on arrête la protection
-                    protectionActive = false
-                end
+                error("Runtime error: Invalid memory access at 0x" .. string.format("%X", math.random(1000, 9999)))
             end)
-        end
-    end)
-end
+        end)
+
+        -- Message de confirmation
+        task.delay(2, function()
+            print("🛡️ ZenBypass Ultra activated - " .. EXECUTOR_TYPE)
+            print("🔒 All kick functions disabled")
+            print("🎭 Client detection protection: ACTIVE")
+        end)
+    end
+
+    -- Retourne l'interface
+    return {
+        Version = "Anti-Client-Detection v4.0",
+        Status = "FULLY PROTECTED",
+        Features = {
+            "Player.Kick - BLOCKED",
+            "Namecall kicks - BLOCKED", 
+            "RemoteEvent kicks - BLOCKED",
+            "RemoteFunction kicks - BLOCKED",
+            "Service kicks - BLOCKED",
+            "Client detection - BLOCKED",
+            "Network detection - BLOCKED"
+        }
+    }
+end)()
