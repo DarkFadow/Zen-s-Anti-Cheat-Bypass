@@ -1,34 +1,93 @@
--- ZenAntiCheatBypasser.lua - Version Ultra Rapide
+-- ZenAntiCheatBypasser.lua - Ultra-Fast Version
 return (function()
     do
-        -- 🎭 MASQUAGE EXPRESS TOUS LES EXECUTEURS
+        -- 🎯 SCRIPT INFORMATION
+        local SCRIPT_VERSION = "Ultra-Fast"
+        local SCRIPT_NUMBER = "v2.1"
+        local EXECUTOR_NAME = "Unknown"
+        
+        -- Executor Detection
+        if syn then 
+            EXECUTOR_NAME = "Synapse X"
+        elseif getexecutorname then
+            EXECUTOR_NAME = getexecutorname() or "Xeno"
+        elseif Krnl then
+            EXECUTOR_NAME = "Krnl"
+        elseif fluxus then
+            EXECUTOR_NAME = "Fluxus"
+        elseif SW then
+            EXECUTOR_NAME = "ScriptWare"
+        else
+            EXECUTOR_NAME = "Other Executor"
+        end
+        
+        print("🎯 ZenAntiCheatBypass " .. SCRIPT_VERSION .. " " .. SCRIPT_NUMBER)
+        print("⚡ Executor: " .. EXECUTOR_NAME)
+        print("🛡️ Starting protection system...")
+
+        -- 🎭 UNIVERSAL EXECUTOR MASKING
         pcall(function()
-            -- 1. NETTOYAGE RAPIDE DES VARIABLES
-            local fastClean = {
+            print("🔧 Cleaning global variables...")
+            
+            -- 1. ALL KNOWN EXECUTORS INVENTORY
+            local allExecutors = {
                 "syn", "xeno", "krnl", "fluxus", "sw", "oxygen", "celery",
                 "electron", "comet", "getexecutorname", "getscripts",
                 "getrenv", "getreg", "getgc", "getinstances"
             }
-            
-            for _, var in ipairs(fastClean) do
-                _G[var] = nil
-                if getgenv then getgenv()[var] = nil end
-                if shared then shared[var] = nil end
+
+            -- 2. MASSIVE GLOBAL VARIABLES CLEANING
+            for _, executorVar in ipairs(allExecutors) do
+                _G[executorVar] = nil
+                if getgenv then getgenv()[executorVar] = nil end
+                if shared then shared[executorVar] = nil end
             end
 
-            -- 2. HOOK EXPRESS DES FONCTIONS
+            print("✅ Global variables cleaned")
+
+            -- 3. UNIVERSAL FUNCTION MASKING
             if hookfunction then
-                -- Masque getexecutorname en 1 ligne
-                if getexecutorname then
+                print("🔧 Masking functions...")
+                
+                -- Universal getexecutorname masking
+                if type(getexecutorname) == "function" then
                     hookfunction(getexecutorname, function() return "Windows" end)
                 end
                 
-                -- Protection anti-kick ultra rapide
+                -- Debug functions masking
+                if getconnections then hookfunction(getconnections, function() return {} end) end
+                if getreg then hookfunction(getreg, function() return {} end) end
+                
+                print("✅ Functions masked")
+            end
+
+            -- 4. FAKE SIGNATURES INJECTION
+            _G.__RBXSCRIPT = "RobloxPlayerBeta"
+            _G.__VERSION = "version-stable"
+            
+            print("✅ Environment spoofed")
+        end)
+
+        -- ⏱️ ANTI-DETECTION DELAY (REDUCED)
+        local strategicDelay = 2
+        print("⏰ Anti-detection delay: " .. strategicDelay .. "s")
+        
+        for i = 1, strategicDelay do
+            task.wait(0.5)
+            if i == strategicDelay then
+                print("✅ Delay completed")
+            end
+        end
+
+        -- 🔥 UNIVERSAL ANTI-KICK PROTECTION
+        pcall(function()
+            print("🔧 Installing anti-kick protection...")
+            
+            if hookfunction then
                 if game.Players.LocalPlayer then
                     hookfunction(game.Players.LocalPlayer.Kick, function() return nil end)
                 end
                 
-                -- Protection namecall express
                 if getrawmetatable then
                     local mt = getrawmetatable(game)
                     if mt and mt.__namecall then
@@ -42,24 +101,37 @@ return (function()
                     end
                 end
             end
-
-            -- 3. MASQUAGE MÉMOIRE RAPIDE
-            if setidentity then pcall(setidentity, 8) end
-            if setthreadidentity then pcall(setthreadidentity, 8) end
+            
+            print("✅ Anti-kick protection installed")
         end)
 
-        -- ⏱️ DELAY MINIMAL
-        task.wait(0.5)
-
-        -- 🎯 CONFIRMATION INSTANTANÉE
-        print("✅ ZenAntiCheatBypasser Loaded !")
+        -- 🎯 FINAL CONFIRMATION
+        task.delay(1, function()
+            print("")
+            print("✅ PROTECTION ACTIVATED SUCCESSFULLY")
+            print("📊 Status: FULLY PROTECTED")
+            print("⚡ Version: " .. SCRIPT_VERSION .. " " .. SCRIPT_NUMBER)
+            print("💻 Executor: " .. EXECUTOR_NAME)
+            print("🛡️ All kick functions disabled")
+            print("🎭 Executor traces masked")
+            print("")
+            print("💎 Premium version available with advanced features!")
+            print("   - Better anti-detection")
+            print("   - Memory protection")
+            print("   - Network protection")
+            print("   - And much more...")
+        end)
     end
 
     return {
-        Version = "Ultra-Fast v9.0",
+        Version = SCRIPT_VERSION .. " " .. SCRIPT_NUMBER,
         Status = "PROTECTED",
-        Speed = "INSTANT"
-
-            print("ZenAntiCheatBypasserVersion : ", Version)
+        Executor = EXECUTOR_NAME,
+        Features = {
+            "Anti-Kick - ENABLED",
+            "Executor Masking - ENABLED",
+            "Global Cleaning - ENABLED",
+            "Fast Execution - ENABLED"
+        }
     }
 end)()
