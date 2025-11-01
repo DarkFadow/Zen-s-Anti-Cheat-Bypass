@@ -1,4 +1,4 @@
-﻿-- ZEN ANTICHEAT BYPASSER - PROTECTION CIBLÉE (CORRIGÉE)
+-- ZEN ANTICHEAT BYPASSER - PROTECTION CIBLÉE (CORRIGÉE)
 do
     -- 🔧 Détection executeur
     local EXECUTOR_TYPE = "Unknown"
